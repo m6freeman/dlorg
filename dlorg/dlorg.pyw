@@ -41,9 +41,19 @@ music_exts          = '(\.)+(3gp|8svx|aa|aac|aax|act|aiff|alac|amr|ape|au|awb|cd
 # create filesystemeventhandler class
 class MyHandler(FileSystemEventHandler):
 
-    # on event, perform organization
-    def on_modified(self, event):
+    # set constant buffer size to 64kb chunks
+    BUFF_SIZE = 65536
 
+    # on event, perform organization
+    def on_created(self, event):
+        self.organizeFiles()
+    
+    def on_modified(self, event):
+        self.organizeFiles()
+
+
+
+    def organizeFiles(self):
         # iterate through each file within the watch_folder
         for filename in os.listdir(watch_folder):
 
@@ -56,43 +66,49 @@ class MyHandler(FileSystemEventHandler):
                 # capture the file extension to test against
                 ext = os.path.splitext(filename)[-1].lower()
 
-
-                BUFF_SIZE = 65536  # lets read stuff in 64kb chunks!
-                md5 = hashlib.md5()
-
                 # perform filetype checks
                 # check if it's an image
-                if  re.match(image_exts, ext, re.IGNORECASE):
-                    new_destination = images_folder + "/" + filename
+                if re.match(image_exts, ext, re.IGNORECASE):
+                        new_destination = images_folder + "/"
 
                 # check if it's a video
                 elif re.match(video_exts, ext, re.IGNORECASE):
-                     new_destination = videos_folder + "/" + filename
-                
+                    new_destination = videos_folder + "/"
+
                 # check if it's a document
                 elif re.match(docs_exts, ext, re.IGNORECASE):
-                     new_destination = documents_folder + "/" + filename
+                    new_destination = documents_folder + "/"
 
                 # check if it's music
                 elif re.match(music_exts, ext, re.IGNORECASE):
-                     new_destination = music_folder + "/" + filename
-                
+                    new_destination = music_folder + "/"
+
                 # if it's none of those, skip that file
                 else:
                     continue
 
-                # if the new destination doesn't have a file of the same name, move it there
-                if not os.path.exists(new_destination):
-                    os.rename(src, new_destination)
-                else:
-                    # otherwise, hash the file bit by bit and append last 5 characters of hash to the name
-                    with open(src, 'rb') as f:
-                        while True:
-                            data = f.read(BUFF_SIZE)
-                            if not data:
-                                break
-                            md5.update(data)
-                    os.rename(src, new_destination + md5.hexdigest()[-5:])
+                self.renameFile(src, new_destination, filename)
+
+    def renameFile(self, src, destination, fileName):
+        
+        # if the new destination doesn't have a file of the same name, move it there
+        if not os.path.exists(destination + fileName):
+            os.rename(src, destination + fileName)
+            
+        # otherwise, hash the file bit by bit (to accommodate large file sizes) and append last 5 characters of hash to the filename
+        else:
+            md5 = hashlib.md5()
+            with open(src, 'rb') as f:
+                while True:
+                    data = f.read(MyHandler.BUFF_SIZE)
+                    if not data:
+                        break
+                    md5.update(data)
+                fileName = md5.hexdigest()[-5:] + fileName
+                f.close()
+
+            # call renameFile again passing the same src, destination, but newly altered name and test again
+            self.renameFile(src, destination, fileName)
 
 
 
@@ -112,4 +128,3 @@ observer.join()
 
 
 # TODO substitute string /s with path objects 
-# TODO place hash bit before file extension
