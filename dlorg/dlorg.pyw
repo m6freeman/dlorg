@@ -38,22 +38,23 @@ docs_exts           = '(\.)+(csv|dat|doc|docx|ged|key|keychain|log|msg|odt|pages
 music_folder        = R"C:/Users/Matthew/Music"
 music_exts          = '(\.)+(3gp|8svx|aa|aac|aax|act|aiff|alac|amr|ape|au|awb|cda|dct|dss|dvf|flac|gsm|iklax|ivs|m4a|m4b|m4p|mmf|mp3|mpc|msv|nmf|nsf|oga|mogg|opus|ra|rm|raw|rf64|sln|tta|voc|vox|wav|webm|wma|wv)'
 
-# create filesystemeventhandler class
+# define filesystemeventhandler derived handler class
 class MyHandler(FileSystemEventHandler):
 
     # set constant buffer size to 64kb chunks
     BUFF_SIZE = 65536
 
-    # on event, perform organization
+    # on events, perform organization
     def on_created(self, event):
-        self.organizeFiles()
+        self.organizeFiles(watch_folder)
     
     def on_modified(self, event):
-        self.organizeFiles()
+        self.organizeFiles(watch_folder)
 
 
-
-    def organizeFiles(self):
+    # The purpose of this method is to iterate through each file within a directory,
+    # parse it's file extension, and move the file into it's appropriate folder.
+    def organizeFiles(self, watch_folder):
         # iterate through each file within the watch_folder
         for filename in os.listdir(watch_folder):
 
@@ -87,8 +88,12 @@ class MyHandler(FileSystemEventHandler):
                 else:
                     continue
 
+                # pass the destination folder and relevant file information to be moved
                 self.renameFile(src, new_destination, filename)
 
+
+    # The purpose of this method is to take the destination folder and file to be moved
+    # and rename the file with some of it's hash if a file of the same name already exists
     def renameFile(self, src, destination, fileName):
         
         # if the new destination doesn't have a file of the same name, move it there
@@ -97,14 +102,18 @@ class MyHandler(FileSystemEventHandler):
             
         # otherwise, hash the file bit by bit (to accommodate large file sizes) and append last 5 characters of hash to the filename
         else:
+
             md5 = hashlib.md5()
+            
             with open(src, 'rb') as f:
                 while True:
                     data = f.read(MyHandler.BUFF_SIZE)
                     if not data:
                         break
                     md5.update(data)
+
                 fileName = md5.hexdigest()[-5:] + fileName
+                
                 f.close()
 
             # call renameFile again passing the same src, destination, but newly altered name and test again
