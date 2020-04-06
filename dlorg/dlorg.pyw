@@ -1,9 +1,5 @@
-import os
 import time
-import json
-import shutil
 import re
-import hashlib
 from pathlib import Path
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -22,26 +18,21 @@ from watchdog.events import FileSystemEventHandler
 
 # The folder to watch
 watch_folder = Path.home() / 'Downloads'
-# watch_folder = "C:/Users/Matthew/Downloads"
 
 # Destination DOCUMENT folder and regex of common DOCUMENT filetypes
 documents_folder    = Path.home() / 'Documents'
-# documents_folder    = R"C:/Users/Matthew/Documents"
 docs_exts           = '(\.)+(csv|dat|doc|docx|ged|key|keychain|log|msg|odt|pages|pps|ppt|pptx|rtf|sdf|tar|tax2016|tax2019|tex|txt|vcf|wpd|wps|xml)'
 
 # Destination IMAGE folder and regex of common IMAGE filetypes
 images_folder       = Path.home() / 'Pictures'
-# images_folder       = R"C:/Users/Matthew/Pictures"
 image_exts          = '(\.)+(ai|bmp|eps|gif|heif|indd|jpg|png|psd|raw|svg|tiff|webp)'
 
 # Destination MUSIC folder and regex of common MUSIC filetypes
 music_folder        = Path.home() / 'Music'
-# music_folder        = R"C:/Users/Matthew/Music"
 music_exts          = '(\.)+(3gp|8svx|aa|aac|aax|act|aiff|alac|amr|ape|au|awb|cda|dct|dss|dvf|flac|gsm|iklax|ivs|m4a|m4b|m4p|mmf|mp3|mpc|msv|nmf|nsf|oga|mogg|opus|ra|rm|rf64|sln|tta|voc|vox|wav|wma|wv)'
 
 # Destination VIDEO folder and regex of common VIDEO filetypes
 videos_folder       = Path.home() / 'Videos'
-# videos_folder       = R"C:/Users/Matthew/Videos"
 video_exts          = '(\.)+(3g2|3gp|amv|asf|avi|drc|f4a|f4b|f4p|f4v|flv|flv|flv|gif|gifv|m2ts|m2v|m4p|m4v|mkv|mng|mov|mp2|mp4|mpe|mpeg|mpg|mpv|mts|mxf|nsv|ogg|ogv|qt|rm|rmvb|roq|svi|ts|vob|webm|wmv|yuv)'
 
 # define filesystemeventhandler derived handler class
